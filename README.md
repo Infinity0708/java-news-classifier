@@ -1,30 +1,144 @@
-# Java News Classifier
+# News Classifier — Assignment 1
 
-A University of Birmingham Object Oriented Programming coursework project (2023), implementing a news similarity and topic grouping pipeline in Java.
+A Java news classification project developed for the first assignment of an Object Oriented Programming course. It introduces fundamental Natural Language Processing (NLP) techniques through text preprocessing, TF-IDF vectorisation, cosine similarity, and topic-based grouping.
 
-## Features
+The project uses 20 local news articles covering space exploration and cryptocurrency.
 
-- Extract article titles and content from local HTML files.
-- Clean and lowercase text, apply rule-based suffix removal, and filter stop words.
-- Build a vocabulary and calculate TF-IDF document vectors.
-- Implement vector operations and cosine similarity.
-- Rank related news and assign articles to two groups using representative articles.
+## Project Objectives
 
-## Technology
+- Extract useful text from HTML news articles.
+- Prepare text for numerical analysis.
+- Represent documents using TF-IDF vectors.
+- Measure and rank article similarity.
+- Group articles by comparing them with two representative documents.
+- Organise the implementation into reusable Java classes.
 
-Java 17, Maven, JUnit. Production source code does not require an external NLP library.
+## Processing Pipeline
 
-## Dataset and method
+1. Load local HTML articles and the stop-word list.
+2. Extract article titles and body text.
+3. Clean and lowercase the text.
+4. Apply rule-based word suffix removal.
+5. Remove stop words.
+6. Build a vocabulary across all processed articles.
+7. Calculate a TF-IDF vector for each article.
+8. Calculate cosine similarity and rank related articles.
+9. Assign articles to topic groups using two representative articles.
 
-The supplied coursework dataset contains 20 Sky News HTML articles about space exploration and cryptocurrency. TF is the term count divided by the document word count; IDF is ln(N / document_frequency) + 1. Grouping compares each article with two representative articles. This is a small similarity-based coursework classifier; no trained neural model or financial risk classification is claimed.
+## NLP Concepts
 
-The method named `textLemmatization` implements suffix stripping rather than linguistic lemmatization. Ties in group similarity are not assigned to either group by the original implementation.
+### HTML Text Extraction
 
-## Run
+The parser extracts article titles from HTML title tags and article content from the `articleBody` field.
 
-Open this folder (the folder containing `pom.xml`) in IntelliJ IDEA, select JDK 17, load the Maven project, and run `uob.oop.NewsClassifier`. Set the working directory to this project root so local news files can be found.
+This parser is designed for the supplied HTML format rather than arbitrary websites.
 
-Alternatively, with JDK 17 available, run from the project root:
+### Text Cleaning and Tokenisation
+
+Text is converted to lowercase, and characters other than letters, digits, and spaces are removed. The resulting text is split into word tokens.
+
+### Rule-Based Word Normalisation
+
+The method named `textLemmatization` checks the suffixes `ing`, `ed`, `es`, and `s` in that order and removes the first matching suffix.
+
+Examples include:
+
+- `playing` → `play`
+- `helped` → `help`
+- `apples` → `appl`
+- `bananas` → `banana`
+
+Although the assignment calls this lemmatization, the implementation is a simplified suffix-stripping method, closer to stemming. It does not use a dictionary, grammatical context, or part-of-speech information.
+
+### Stop-Word Removal
+
+Common words are removed using a supplied stop-word list, allowing the document representation to focus on more informative terms.
+
+### Vocabulary Construction
+
+A shared vocabulary contains the unique terms found across the processed articles. Each vocabulary term corresponds to one dimension of a document vector.
+
+### TF-IDF Vectorisation
+
+Term Frequency (TF) measures how often a term occurs relative to the total number of tokens in a document.
+
+Inverse Document Frequency (IDF) gives greater weight to terms that appear in fewer documents.
+
+The implementation uses:
+
+- `TF(t, d) = count(t, d) / total_tokens(d)`
+- `IDF(t) = ln(N / DF(t)) + 1`
+- `TF-IDF(t, d) = TF(t, d) × IDF(t)`
+
+Here, `N` is the number of documents, `DF(t)` is the number of documents containing the term, and `ln` is the natural logarithm.
+
+### Cosine Similarity
+
+Cosine similarity compares the direction of two document vectors:
+
+`similarity(A, B) = dot(A, B) / (norm(A) × norm(B))`
+
+For nonzero TF-IDF vectors, a higher score indicates greater similarity in their weighted vocabulary.
+
+### Topic Grouping
+
+Two representative articles act as references for the topic groups. Each article is compared with both references and assigned to the group with the higher similarity score.
+
+This is a similarity-based approach rather than a classifier trained on labelled data.
+
+## Object Oriented Programming Concepts
+
+- Classes and objects.
+- Constructors and instance fields.
+- Static utility methods.
+- Separation of responsibilities.
+- Composition of cooperating objects.
+- Arrays and two-dimensional numerical data.
+- Reusable methods for vector operations and result formatting.
+
+## Main Classes
+
+| Class | Responsibility |
+| --- | --- |
+| `HtmlParser` | Extract article titles and content from HTML strings. |
+| `NLP` | Clean text, remove suffixes, and filter stop words. |
+| `Vector` | Provide vector access, resizing, arithmetic, dot products, and cosine similarity. |
+| `NewsClassifier` | Coordinate preprocessing, vocabulary construction, TF-IDF calculation, ranking, and grouping. |
+| `Toolkit` | Load local news files and stop words. |
+
+The project was developed from a supplied coursework skeleton, which included supporting code and tests.
+
+## Technologies
+
+- Java 17
+- Maven
+- JUnit
+- Local HTML and CSV resources
+
+The main application uses Java's standard library without an external NLP framework.
+
+## Repository Structure
+
+- `pom.xml` — Maven configuration.
+- `src/main/java/uob/oop/` — application source code.
+- `src/main/resources/News/` — local news articles.
+- `src/main/resources/stopwords.csv` — stop-word list.
+- `src/test/java/` — coursework tests.
+- `.gitignore` — excludes IDE settings and generated build files.
+
+## Running the Application
+
+### IntelliJ IDEA
+
+1. Open the project folder containing `pom.xml`.
+2. Select JDK 17.
+3. Load the Maven project and its dependencies.
+4. Set the working directory to the project root.
+5. Run the `main` method in `uob.oop.NewsClassifier`.
+
+### macOS / Linux Terminal
+
+Run the following commands from the project root:
 
 ```bash
 mkdir -p target/classes
@@ -32,22 +146,39 @@ javac -d target/classes src/main/java/uob/oop/*.java
 java -cp target/classes:src/main/resources uob.oop.NewsClassifier
 ```
 
-The classpath separator above is for macOS/Linux; use `;` instead of `:` on Windows.
+On Windows, replace the classpath separator `:` with `;`.
 
-## Tests
+## Application Output
 
-The original coursework tests are retained under `src/test/java`. Run the `Tester_*` classes from IntelliJ. No passing test count or accuracy score is claimed in this archive. Some Maven test runners may not automatically discover these filenames.
+The application prints:
 
-## Repository contents
+- The top 10 similarity results for a selected article, including the article itself.
+- Article indexes, similarity scores, and titles.
+- The number of articles assigned to each topic group.
+- The titles of articles in each group.
 
-- `src/main/java/uob/oop/`: Java source files.
-- `src/main/resources/`: original coursework news files and stop words.
-- `src/test/java/`: supplied coursework tests.
-- `docs/assignment-instructions-v2.1.pdf`: the available assignment brief. The course page screenshot mentions a newer V2.5, which is not included here.
-- `pom.xml`: original Maven configuration.
+## Testing
 
-## Origin and sharing
+The repository includes the following test classes:
 
-This archive preserves the submitted source files, tests, resources, and Maven configuration without changing their code. The coursework was based on a university-provided skeleton; this repository does not claim that every supplied file was authored by the student. The original skeleton is not available here for an exact authorship comparison.
+- `Tester_HtmlParser`
+- `Tester_NLP`
+- `Tester_Vector`
+- `Tester_NewsClassifier`
 
-Keep this repository private while checking the course rules on publishing solutions. The supplied brief prohibits sharing code. University materials and third-party news content are not relicensed by this repository.
+These can be run individually from IntelliJ IDEA. Their filenames may require explicit configuration for automatic discovery by a Maven test runner.
+
+No verified test pass count or classification accuracy is reported in this README.
+
+## Limitations
+
+- The dataset contains only 20 articles across two broad topics.
+- HTML extraction depends on the supplied page format.
+- Word normalisation uses simple suffix rules.
+- TF-IDF captures weighted word overlap rather than contextual meaning.
+- Grouping depends on the selected representative articles.
+- The original implementation leaves articles unassigned when both group similarity scores are equal.
+
+## Assignment Series
+
+This repository covers Assignment 1: the foundational Java NLP pipeline for news similarity and topic grouping.
