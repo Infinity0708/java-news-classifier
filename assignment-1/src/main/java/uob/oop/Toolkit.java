@@ -37,7 +37,6 @@ public class Toolkit {
             e.printStackTrace();
         }
 
-
         return trimArray(myHTML, currentIndex);
     }
 
